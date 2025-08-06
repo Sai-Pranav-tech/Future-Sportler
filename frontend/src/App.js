@@ -193,7 +193,7 @@ function App() {
     }
   };
 
-  // Group errors by type
+  // Group errors by type and prioritize by severity
   const groupErrorsByType = (errors) => {
     const grouped = {};
     errors.forEach(error => {
@@ -202,7 +202,25 @@ function App() {
       }
       grouped[error.type].push(error);
     });
+    
+    // Sort each group by severity (high -> medium -> low)
+    Object.keys(grouped).forEach(type => {
+      grouped[type].sort((a, b) => {
+        const severityOrder = { 'high': 3, 'medium': 2, 'low': 1 };
+        return (severityOrder[b.severity] || 0) - (severityOrder[a.severity] || 0);
+      });
+    });
+    
     return grouped;
+  };
+
+  const getTopPriorityErrors = (errors, limit = 5) => {
+    return errors
+      .sort((a, b) => {
+        const severityOrder = { 'high': 3, 'medium': 2, 'low': 1 };
+        return (severityOrder[b.severity] || 0) - (severityOrder[a.severity] || 0);
+      })
+      .slice(0, limit);
   };
 
   return (
