@@ -208,7 +208,7 @@ class ArcheryAnalyzer:
             
         return errors, metrics
     
-    def analyze_draw_phase(self, landmarks):
+    def analyze_draw_phase(self, landmarks, frame_number=0):
         """Analyze the drawing phase of the shot"""
         errors = []
         metrics = {}
@@ -231,36 +231,111 @@ class ArcheryAnalyzer:
         metrics['left_elbow_angle'] = left_elbow_angle
         metrics['right_elbow_angle'] = right_elbow_angle
         
-        # Check draw arm (usually right arm for right-handed archer)
-        # Ideal elbow angle during draw should be around 90-120 degrees
-        if right_elbow_angle < 80:
+        # Detailed draw arm analysis (assuming right-handed archer)
+        if right_elbow_angle < 60:
+            errors.append({
+                'type': 'draw',
+                'issue': 'severely_collapsed_elbow',
+                'description': f'Frame {frame_number}: Draw elbow severely collapsed ({right_elbow_angle:.1f}°)',
+                'severity': 'high',
+                'correction': 'Immediately raise and extend your drawing elbow - this is critical for proper form',
+                'frame': frame_number,
+                'measurement': f'Current: {right_elbow_angle:.1f}°, Target: 90-120°'
+            })
+        elif right_elbow_angle < 80:
             errors.append({
                 'type': 'draw',
                 'issue': 'collapsed_elbow',
-                'description': 'Drawing elbow is collapsed. Keep elbow up and back.',
+                'description': f'Frame {frame_number}: Draw elbow is collapsed ({right_elbow_angle:.1f}°)',
                 'severity': 'high',
-                'correction': 'Raise your drawing elbow to create proper back tension'
+                'correction': 'Raise your drawing elbow and create proper back tension',
+                'frame': frame_number,
+                'measurement': f'Current: {right_elbow_angle:.1f}°, Minimum: 80°'
+            })
+        elif right_elbow_angle > 150:
+            errors.append({
+                'type': 'draw',
+                'issue': 'excessive_elbow_height',
+                'description': f'Frame {frame_number}: Draw elbow too high ({right_elbow_angle:.1f}°)',
+                'severity': 'medium',
+                'correction': 'Lower your drawing elbow to a more natural, sustainable position',
+                'frame': frame_number,
+                'measurement': f'Current: {right_elbow_angle:.1f}°, Target: 90-120°'
             })
         elif right_elbow_angle > 140:
             errors.append({
                 'type': 'draw',
                 'issue': 'high_elbow',
-                'description': 'Drawing elbow is too high. Lower it slightly.',
+                'description': f'Frame {frame_number}: Draw elbow slightly high ({right_elbow_angle:.1f}°)',
+                'severity': 'low',
+                'correction': 'Lower your drawing elbow slightly for optimal biomechanics',
+                'frame': frame_number,
+                'measurement': f'Current: {right_elbow_angle:.1f}°, Optimal: 90-120°'
+            })
+            
+        # Analyze bow arm (left arm for right-handed archer)
+        if left_elbow_angle < 160:
+            errors.append({
+                'type': 'draw',
+                'issue': 'bent_bow_arm',
+                'description': f'Frame {frame_number}: Bow arm is bent ({left_elbow_angle:.1f}°)',
                 'severity': 'medium',
-                'correction': 'Lower your drawing elbow to a more natural position'
+                'correction': 'Extend your bow arm more fully but keep it relaxed',
+                'frame': frame_number,
+                'measurement': f'Current: {left_elbow_angle:.1f}°, Target: 160-180°'
+            })
+            
+        # Check wrist positioning
+        wrist_height_diff = abs(left_wrist[1] - right_wrist[1])
+        if wrist_height_diff > 0.1:
+            errors.append({
+                'type': 'draw',
+                'issue': 'uneven_wrist_height',
+                'description': f'Frame {frame_number}: Wrists at significantly different heights',
+                'severity': 'medium',
+                'correction': 'Keep both wrists at similar height for consistent shot execution',
+                'frame': frame_number,
+                'measurement': f'Height difference: {wrist_height_diff:.3f}'
             })
             
         # Check shoulder alignment during draw
         shoulder_height_diff = abs(left_shoulder[1] - right_shoulder[1])
         metrics['shoulder_alignment'] = shoulder_height_diff
         
-        if shoulder_height_diff > 0.03:  # 3% threshold
+        if shoulder_height_diff > 0.05:
+            errors.append({
+                'type': 'draw',
+                'issue': 'severe_shoulder_tilt',
+                'description': f'Frame {frame_number}: Shoulders severely uneven during draw',
+                'severity': 'high',
+                'correction': 'Keep both shoulders level and relaxed - avoid hiking up your drawing shoulder',
+                'frame': frame_number,
+                'measurement': f'Height difference: {shoulder_height_diff:.3f}'
+            })
+        elif shoulder_height_diff > 0.03:
             errors.append({
                 'type': 'draw',
                 'issue': 'uneven_shoulders',
-                'description': 'Shoulders are not level during draw.',
+                'description': f'Frame {frame_number}: Shoulders not level during draw',
                 'severity': 'medium',
-                'correction': 'Keep both shoulders level and relaxed during the draw'
+                'correction': 'Keep both shoulders level and relaxed during the draw',
+                'frame': frame_number,
+                'measurement': f'Height difference: {shoulder_height_diff:.3f}'
+            })
+        
+        # Check draw length consistency
+        draw_distance = abs(left_wrist[0] - right_wrist[0])
+        metrics['draw_distance'] = draw_distance
+        
+        if draw_distance < 0.2:
+            errors.append({
+                'type': 'draw',
+                'issue': 'insufficient_draw',
+                'description': f'Frame {frame_number}: Draw length appears insufficient',
+                'severity': 'medium',
+                'correction': 'Ensure you reach your consistent anchor point with full draw',
+                'frame': frame_number,
+                'measurement': f'Draw span: {draw_distance:.3f}'
             })
             
         return errors, metrics
