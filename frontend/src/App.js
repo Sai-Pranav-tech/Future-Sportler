@@ -117,6 +117,8 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [sampleVideos, setSampleVideos] = useState([]);
   const [uploadedFile, setUploadedFile] = useState(null);
+  const [showAllErrors, setShowAllErrors] = useState({});
+  const [showAllRecommendations, setShowAllRecommendations] = useState(false);
   const fileInputRef = useRef(null);
 
   // Load sample videos on component mount
