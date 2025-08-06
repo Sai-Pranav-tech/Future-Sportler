@@ -326,7 +326,7 @@ function App() {
                                   <span>{type} Issues ({errors.length})</span>
                                 </h4>
                                 <div className="space-y-2">
-                                  {errors.slice(0, 5).map((error, index) => (
+                                  {errors.map((error, index) => (
                                     <div key={index} className={`p-4 rounded-lg border ${getSeverityColor(error.severity)}`}>
                                       <div className="flex items-start justify-between">
                                         <div className="flex-1">
@@ -339,11 +339,6 @@ function App() {
                                       </div>
                                     </div>
                                   ))}
-                                  {errors.length > 5 && (
-                                    <p className="text-sm text-gray-500 text-center py-2">
-                                      + {errors.length - 5} more {type} issues detected
-                                    </p>
-                                  )}
                                 </div>
                                 <Separator />
                               </div>
