@@ -1,4 +1,6 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, Suspense } from 'react';
+import { Canvas } from '@react-three/fiber';
+import { OrbitControls, Text, Sphere, Line } from '@react-three/drei';
 import './App.css';
 
 // UI Components
