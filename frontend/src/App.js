@@ -407,13 +407,27 @@ function App() {
                       <div className="space-y-2">
                         <h4 className="font-semibold flex items-center space-x-2">
                           <CheckCircle2 className="w-4 h-4 text-green-500" />
-                          <span>Key Recommendations</span>
+                          <span>Top Priority Recommendations</span>
                         </h4>
-                        {analysis.feedback.map((feedback, index) => (
+                        {analysis.feedback.slice(0, showAllRecommendations ? analysis.feedback.length : 3).map((feedback, index) => (
                           <Alert key={index} className="border-l-4 border-l-blue-500">
                             <AlertDescription>{feedback}</AlertDescription>
                           </Alert>
                         ))}
+                        {analysis.feedback.length > 3 && (
+                          <Button
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => setShowAllRecommendations(!showAllRecommendations)}
+                            className="mt-2 text-blue-600 border-blue-200 hover:bg-blue-50"
+                          >
+                            {showAllRecommendations ? (
+                              <>Show Less <ChevronUp className="w-4 h-4 ml-1" /></>
+                            ) : (
+                              <>Show {analysis.feedback.length - 3} More Recommendations <ChevronDown className="w-4 h-4 ml-1" /></>
+                            )}
+                          </Button>
+                        )}
                       </div>
                     )}
                   </CardContent>
