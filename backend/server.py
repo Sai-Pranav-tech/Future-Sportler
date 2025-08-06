@@ -376,8 +376,8 @@ class ArcheryAnalyzer:
                 landmarks = results.pose_landmarks.landmark
                 
                 # Analyze different aspects
-                stance_errors, stance_metrics = self.analyze_stance(landmarks)
-                draw_errors, draw_metrics = self.analyze_draw_phase(landmarks)
+                stance_errors, stance_metrics = self.analyze_stance(landmarks, frame_count)
+                draw_errors, draw_metrics = self.analyze_draw_phase(landmarks, frame_count)
                 
                 # Combine results
                 frame_errors = stance_errors + draw_errors
