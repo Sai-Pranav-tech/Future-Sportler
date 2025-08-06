@@ -17,6 +17,100 @@ import { Upload, Play, Target, Activity, AlertTriangle, CheckCircle2, TrendingUp
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
+// 3D Pose Visualization Component
+function PoseVisualization({ poseData }) {
+  if (!poseData || poseData.length === 0) {
+    return null;
+  }
+
+  // Use the first frame with pose data for static visualization
+  const firstFrame = poseData[0];
+  if (!firstFrame || !firstFrame.landmarks) {
+    return null;
+  }
+
+  const landmarks = firstFrame.landmarks;
+
+  // MediaPipe pose connections (simplified key connections for archery analysis)
+  const connections = [
+    // Spine and torso
+    [11, 12], // Left shoulder to right shoulder
+    [11, 23], // Left shoulder to left hip
+    [12, 24], // Right shoulder to right hip
+    [23, 24], // Left hip to right hip
+    
+    // Arms
+    [11, 13], // Left shoulder to left elbow
+    [13, 15], // Left elbow to left wrist
+    [12, 14], // Right shoulder to right elbow
+    [14, 16], // Right elbow to right wrist
+    
+    // Legs
+    [23, 25], // Left hip to left knee
+    [25, 27], // Left knee to left ankle
+    [24, 26], // Right hip to right knee
+    [26, 28], // Right knee to right ankle
+  ];
+
+  return (
+    <group>
+      {/* Draw landmarks as spheres */}
+      {landmarks.map((landmark, index) => (
+        <Sphere 
+          key={index}
+          position={[
+            (landmark.x - 0.5) * 4,  // Scale and center X
+            (0.5 - landmark.y) * 4,  // Scale and flip Y
+            landmark.z * 2            // Scale Z
+          ]}
+          args={[0.05, 8, 8]}
+        >
+          <meshBasicMaterial color={
+            index === 11 || index === 12 ? "#ff6b6b" : // Shoulders - red
+            index === 13 || index === 14 ? "#4ecdc4" : // Elbows - teal  
+            index === 15 || index === 16 ? "#45b7d1" : // Wrists - blue
+            index === 23 || index === 24 ? "#96ceb4" : // Hips - green
+            "#ffeaa7"  // Other points - yellow
+          } />
+        </Sphere>
+      ))}
+      
+      {/* Draw connections as lines */}
+      {connections.map((connection, index) => {
+        const start = landmarks[connection[0]];
+        const end = landmarks[connection[1]];
+        
+        if (!start || !end) return null;
+        
+        const startPos = [
+          (start.x - 0.5) * 4,
+          (0.5 - start.y) * 4,
+          start.z * 2
+        ];
+        const endPos = [
+          (end.x - 0.5) * 4,
+          (0.5 - end.y) * 4,
+          end.z * 2
+        ];
+        
+        return (
+          <Line
+            key={index}
+            points={[startPos, endPos]}
+            color="#6c5ce7"
+            lineWidth={2}
+          />
+        );
+      })}
+      
+      {/* Add axis labels */}
+      <Text position={[2.5, 0, 0]} fontSize={0.2} color="#666">X</Text>
+      <Text position={[0, 2.5, 0]} fontSize={0.2} color="#666">Y</Text>
+      <Text position={[0, 0, 1.5]} fontSize={0.2} color="#666">Z</Text>
+    </group>
+  );
+}
+
 function App() {
   const [selectedVideo, setSelectedVideo] = useState(null);
   const [analysis, setAnalysis] = useState(null);
