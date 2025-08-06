@@ -13,7 +13,7 @@ import { Alert, AlertDescription } from './components/ui/alert';
 import { Separator } from './components/ui/separator';
 
 // Icons
-import { Upload, Play, Target, Activity, AlertTriangle, CheckCircle2, TrendingUp, Users, Eye, Zap } from 'lucide-react';
+import { Upload, Play, Target, Activity, AlertTriangle, CheckCircle2, TrendingUp, Users, Eye, Zap, ChevronDown, ChevronUp } from 'lucide-react';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
