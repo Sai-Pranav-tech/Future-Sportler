@@ -1,4 +1,4 @@
-# 🏹 AI Archery Form Analyzer
+# 🏹 AI Archery Form Analyzer - Future Sportler
 
 ## Overview
 Advanced AI-powered archery form analysis system using computer vision and biomechanical analysis. Built for the Future Sportler competition, this system provides real-time 3D pose analysis, error detection, and corrective feedback for archery technique improvement.
