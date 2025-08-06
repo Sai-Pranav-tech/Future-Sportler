@@ -17,7 +17,7 @@ import { Upload, Play, Target, Activity, AlertTriangle, CheckCircle2, TrendingUp
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
-// 3D Pose Visualization Component
+// 3D Pose Visualization Component - Enhanced & Eye-catching
 function PoseVisualization({ poseData }) {
   if (!poseData || poseData.length === 0) {
     return null;
@@ -31,82 +31,155 @@ function PoseVisualization({ poseData }) {
 
   const landmarks = firstFrame.landmarks;
 
-  // MediaPipe pose connections (simplified key connections for archery analysis)
-  const connections = [
-    // Spine and torso
-    [11, 12], // Left shoulder to right shoulder
-    [11, 23], // Left shoulder to left hip
-    [12, 24], // Right shoulder to right hip
-    [23, 24], // Left hip to right hip
-    
-    // Arms
-    [11, 13], // Left shoulder to left elbow
-    [13, 15], // Left elbow to left wrist
-    [12, 14], // Right shoulder to right elbow
-    [14, 16], // Right elbow to right wrist
-    
-    // Legs
-    [23, 25], // Left hip to left knee
-    [25, 27], // Left knee to left ankle
-    [24, 26], // Right hip to right knee
-    [26, 28], // Right knee to right ankle
-  ];
+  // Enhanced MediaPipe pose connections with different connection types
+  const connections = {
+    spine: [
+      [11, 12], // Shoulder line
+      [11, 23], // Left shoulder to left hip
+      [12, 24], // Right shoulder to right hip
+      [23, 24], // Hip line
+    ],
+    arms: [
+      [11, 13], // Left shoulder to left elbow
+      [13, 15], // Left elbow to left wrist
+      [12, 14], // Right shoulder to right elbow
+      [14, 16], // Right elbow to right wrist
+    ],
+    legs: [
+      [23, 25], // Left hip to left knee
+      [25, 27], // Left knee to left ankle
+      [24, 26], // Right hip to right knee
+      [26, 28], // Right knee to right ankle
+    ]
+  };
 
   return (
     <group>
-      {/* Draw landmarks as spheres */}
-      {landmarks.map((landmark, index) => (
-        <Sphere 
-          key={index}
-          position={[
-            (landmark.x - 0.5) * 4,  // Scale and center X
-            (0.5 - landmark.y) * 4,  // Scale and flip Y
-            landmark.z * 2            // Scale Z
-          ]}
-          args={[0.05, 8, 8]}
-        >
-          <meshBasicMaterial color={
-            index === 11 || index === 12 ? "#ff6b6b" : // Shoulders - red
-            index === 13 || index === 14 ? "#4ecdc4" : // Elbows - teal  
-            index === 15 || index === 16 ? "#45b7d1" : // Wrists - blue
-            index === 23 || index === 24 ? "#96ceb4" : // Hips - green
-            "#ffeaa7"  // Other points - yellow
-          } />
-        </Sphere>
-      ))}
-      
-      {/* Draw connections as lines */}
-      {connections.map((connection, index) => {
-        const start = landmarks[connection[0]];
-        const end = landmarks[connection[1]];
+      {/* Enhanced landmarks with different sizes and glowing effects */}
+      {landmarks.map((landmark, index) => {
+        let color, size, opacity;
         
-        if (!start || !end) return null;
-        
-        const startPos = [
-          (start.x - 0.5) * 4,
-          (0.5 - start.y) * 4,
-          start.z * 2
-        ];
-        const endPos = [
-          (end.x - 0.5) * 4,
-          (0.5 - end.y) * 4,
-          end.z * 2
-        ];
-        
+        // Enhanced color coding with different sizes
+        if ([11, 12].includes(index)) { // Shoulders
+          color = "#ff6b6b"; size = 0.08; opacity = 1.0;
+        } else if ([13, 14].includes(index)) { // Elbows
+          color = "#4ecdc4"; size = 0.07; opacity = 1.0;
+        } else if ([15, 16].includes(index)) { // Wrists
+          color = "#45b7d1"; size = 0.06; opacity = 1.0;
+        } else if ([23, 24].includes(index)) { // Hips
+          color = "#96ceb4"; size = 0.07; opacity = 1.0;
+        } else if ([25, 26].includes(index)) { // Knees
+          color = "#feca57"; size = 0.06; opacity = 0.8;
+        } else if ([27, 28].includes(index)) { // Ankles
+          color = "#ff9ff3"; size = 0.06; opacity = 0.8;
+        } else {
+          color = "#a8e6cf"; size = 0.04; opacity = 0.6;
+        }
+
         return (
-          <Line
-            key={index}
-            points={[startPos, endPos]}
-            color="#6c5ce7"
-            lineWidth={2}
-          />
+          <group key={index}>
+            {/* Main sphere */}
+            <Sphere 
+              position={[
+                (landmark.x - 0.5) * 4,
+                (0.5 - landmark.y) * 4,
+                landmark.z * 2
+              ]}
+              args={[size, 16, 16]}
+            >
+              <meshStandardMaterial 
+                color={color} 
+                opacity={opacity}
+                transparent
+                emissive={color}
+                emissiveIntensity={0.2}
+              />
+            </Sphere>
+            
+            {/* Glowing outline for key joints */}
+            {[11, 12, 13, 14, 15, 16].includes(index) && (
+              <Sphere 
+                position={[
+                  (landmark.x - 0.5) * 4,
+                  (0.5 - landmark.y) * 4,
+                  landmark.z * 2
+                ]}
+                args={[size * 1.3, 8, 8]}
+              >
+                <meshBasicMaterial 
+                  color={color} 
+                  opacity={0.3}
+                  transparent
+                />
+              </Sphere>
+            )}
+          </group>
         );
       })}
       
-      {/* Add axis labels */}
-      <Text position={[2.5, 0, 0]} fontSize={0.2} color="#666">X</Text>
-      <Text position={[0, 2.5, 0]} fontSize={0.2} color="#666">Y</Text>
-      <Text position={[0, 0, 1.5]} fontSize={0.2} color="#666">Z</Text>
+      {/* Enhanced connections with different line styles */}
+      {Object.entries(connections).map(([connectionType, connectionList]) => {
+        let lineColor, lineWidth;
+        
+        switch(connectionType) {
+          case 'spine':
+            lineColor = "#e74c3c"; lineWidth = 4;
+            break;
+          case 'arms':
+            lineColor = "#3498db"; lineWidth = 3;
+            break;
+          case 'legs':
+            lineColor = "#2ecc71"; lineWidth = 2;
+            break;
+          default:
+            lineColor = "#9b59b6"; lineWidth = 2;
+        }
+        
+        return connectionList.map((connection, index) => {
+          const start = landmarks[connection[0]];
+          const end = landmarks[connection[1]];
+          
+          if (!start || !end) return null;
+          
+          const startPos = [
+            (start.x - 0.5) * 4,
+            (0.5 - start.y) * 4,
+            start.z * 2
+          ];
+          const endPos = [
+            (end.x - 0.5) * 4,
+            (0.5 - end.y) * 4,
+            end.z * 2
+          ];
+          
+          return (
+            <Line
+              key={`${connectionType}-${index}`}
+              points={[startPos, endPos]}
+              color={lineColor}
+              lineWidth={lineWidth}
+              opacity={0.8}
+            />
+          );
+        });
+      })}
+      
+      {/* Enhanced axis labels with better visibility */}
+      <Text position={[2.5, 0, 0]} fontSize={0.3} color="#e74c3c" fontWeight="bold">
+        X
+      </Text>
+      <Text position={[0, 2.5, 0]} fontSize={0.3} color="#27ae60" fontWeight="bold">
+        Y
+      </Text>
+      <Text position={[0, 0, 1.5]} fontSize={0.3} color="#3498db" fontWeight="bold">
+        Z
+      </Text>
+      
+      {/* Add a subtle ground plane */}
+      <mesh position={[0, -2, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[8, 8]} />
+        <meshStandardMaterial color="#f8f9fa" opacity={0.3} transparent />
+      </mesh>
     </group>
   );
 }
