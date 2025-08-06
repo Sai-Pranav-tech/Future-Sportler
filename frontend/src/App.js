@@ -449,30 +449,62 @@ function App() {
                       <TabsContent value="errors" className="mt-6">
                         {analysis.errors && analysis.errors.length > 0 ? (
                           <div className="space-y-4">
-                            {Object.entries(groupErrorsByType(analysis.errors)).map(([type, errors]) => (
-                              <div key={type} className="space-y-2">
-                                <h4 className="font-semibold capitalize flex items-center space-x-2">
-                                  {getErrorTypeIcon(type)}
-                                  <span>{type} Issues ({errors.length})</span>
-                                </h4>
-                                <div className="space-y-2">
-                                  {errors.map((error, index) => (
-                                    <div key={index} className={`p-4 rounded-lg border ${getSeverityColor(error.severity)}`}>
-                                      <div className="flex items-start justify-between">
-                                        <div className="flex-1">
-                                          <div className="font-medium">{error.description}</div>
-                                          <div className="text-sm mt-1 opacity-80">{error.correction}</div>
+                            {Object.entries(groupErrorsByType(analysis.errors)).map(([type, errors]) => {
+                              const showAll = showAllErrors[type] || false;
+                              const displayErrors = showAll ? errors : getTopPriorityErrors(errors, 5);
+                              
+                              return (
+                                <div key={type} className="space-y-2">
+                                  <h4 className="font-semibold capitalize flex items-center space-x-2">
+                                    {getErrorTypeIcon(type)}
+                                    <span>{type} Issues ({errors.length})</span>
+                                    {errors.length > 5 && (
+                                      <Badge variant="secondary" className="text-xs">
+                                        {showAll ? 'All' : 'Top 5'}
+                                      </Badge>
+                                    )}
+                                  </h4>
+                                  <div className="space-y-2">
+                                    {displayErrors.map((error, index) => (
+                                      <div key={index} className={`p-4 rounded-lg border ${getSeverityColor(error.severity)}`}>
+                                        <div className="flex items-start justify-between">
+                                          <div className="flex-1">
+                                            <div className="font-medium">{error.description}</div>
+                                            <div className="text-sm mt-1 opacity-80">{error.correction}</div>
+                                            {error.measurement && (
+                                              <div className="text-xs mt-1 font-mono text-gray-600 bg-gray-50 px-2 py-1 rounded">
+                                                {error.measurement}
+                                              </div>
+                                            )}
+                                          </div>
+                                          <Badge variant="outline" className="ml-2">
+                                            {error.severity}
+                                          </Badge>
                                         </div>
-                                        <Badge variant="outline" className="ml-2">
-                                          {error.severity}
-                                        </Badge>
                                       </div>
-                                    </div>
-                                  ))}
+                                    ))}
+                                    {errors.length > 5 && (
+                                      <Button
+                                        variant="outline" 
+                                        size="sm"
+                                        onClick={() => setShowAllErrors(prev => ({
+                                          ...prev,
+                                          [type]: !prev[type]
+                                        }))}
+                                        className="w-full mt-2 text-blue-600 border-blue-200 hover:bg-blue-50"
+                                      >
+                                        {showAll ? (
+                                          <>Show Less <ChevronUp className="w-4 h-4 ml-1" /></>
+                                        ) : (
+                                          <>Show {errors.length - 5} More {type} Issues <ChevronDown className="w-4 h-4 ml-1" /></>
+                                        )}
+                                      </Button>
+                                    )}
+                                  </div>
+                                  <Separator />
                                 </div>
-                                <Separator />
-                              </div>
-                            ))}
+                              );
+                            })}
                           </div>
                         ) : (
                           <div className="text-center py-8 text-gray-500">
