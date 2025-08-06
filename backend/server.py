@@ -77,7 +77,7 @@ class ArcheryAnalyzer:
             
         return angle
     
-    def analyze_stance(self, landmarks):
+    def analyze_stance(self, landmarks, frame_number=0):
         """Analyze archer's stance and posture"""
         errors = []
         metrics = {}
@@ -90,6 +90,8 @@ class ArcheryAnalyzer:
         right_ankle = [landmarks[self.key_landmarks['right_ankle']].x, landmarks[self.key_landmarks['right_ankle']].y]
         left_shoulder = [landmarks[self.key_landmarks['left_shoulder']].x, landmarks[self.key_landmarks['left_shoulder']].y]
         right_shoulder = [landmarks[self.key_landmarks['right_shoulder']].x, landmarks[self.key_landmarks['right_shoulder']].y]
+        left_knee = [landmarks[self.key_landmarks['left_knee']].x, landmarks[self.key_landmarks['left_knee']].y]
+        right_knee = [landmarks[self.key_landmarks['right_knee']].x, landmarks[self.key_landmarks['right_knee']].y]
         
         # Calculate foot placement
         foot_distance = abs(left_ankle[0] - right_ankle[0])
@@ -97,21 +99,73 @@ class ArcheryAnalyzer:
         
         # Check stance width (should be about shoulder-width)
         shoulder_width = abs(left_shoulder[0] - right_shoulder[0])
-        if foot_distance < shoulder_width * 0.8:
+        
+        # Detailed stance analysis
+        if foot_distance < shoulder_width * 0.6:
+            errors.append({
+                'type': 'stance',
+                'issue': 'very_narrow_stance',
+                'description': f'Frame {frame_number}: Stance is very narrow ({foot_distance:.3f} vs ideal {shoulder_width:.3f})',
+                'severity': 'high',
+                'correction': 'Significantly widen your feet - move them at least shoulder-width apart',
+                'frame': frame_number,
+                'measurement': f'Foot distance: {foot_distance:.3f}, Shoulder width: {shoulder_width:.3f}'
+            })
+        elif foot_distance < shoulder_width * 0.8:
             errors.append({
                 'type': 'stance',
                 'issue': 'narrow_stance',
-                'description': 'Stance is too narrow. Widen your feet to about shoulder-width apart.',
+                'description': f'Frame {frame_number}: Stance is too narrow for optimal stability',
                 'severity': 'medium',
-                'correction': 'Move your feet wider apart for better stability'
+                'correction': 'Widen your feet to about shoulder-width apart for better stability',
+                'frame': frame_number,
+                'measurement': f'Current: {foot_distance:.3f}, Target: {shoulder_width:.3f}'
+            })
+        elif foot_distance > shoulder_width * 1.5:
+            errors.append({
+                'type': 'stance',
+                'issue': 'very_wide_stance',
+                'description': f'Frame {frame_number}: Stance is extremely wide, affecting balance',
+                'severity': 'high',
+                'correction': 'Bring your feet significantly closer together',
+                'frame': frame_number,
+                'measurement': f'Current: {foot_distance:.3f}, Max recommended: {shoulder_width * 1.3:.3f}'
             })
         elif foot_distance > shoulder_width * 1.3:
             errors.append({
                 'type': 'stance',
                 'issue': 'wide_stance', 
-                'description': 'Stance is too wide. Bring your feet closer together.',
+                'description': f'Frame {frame_number}: Stance is wider than recommended',
                 'severity': 'medium',
-                'correction': 'Narrow your stance slightly for better balance'
+                'correction': 'Narrow your stance slightly for better balance and control',
+                'frame': frame_number,
+                'measurement': f'Current: {foot_distance:.3f}, Recommended: {shoulder_width:.3f}'
+            })
+            
+        # Check foot angle and positioning
+        foot_angle_diff = abs(left_ankle[1] - right_ankle[1])
+        if foot_angle_diff > 0.05:
+            errors.append({
+                'type': 'stance',
+                'issue': 'uneven_foot_height',
+                'description': f'Frame {frame_number}: Feet are at different heights',
+                'severity': 'medium',
+                'correction': 'Ensure both feet are planted firmly and evenly on the ground',
+                'frame': frame_number,
+                'measurement': f'Height difference: {foot_angle_diff:.3f}'
+            })
+            
+        # Check knee alignment
+        knee_alignment = abs((left_knee[0] + right_knee[0])/2 - (left_ankle[0] + right_ankle[0])/2)
+        if knee_alignment > 0.03:
+            errors.append({
+                'type': 'stance',
+                'issue': 'knee_misalignment',
+                'description': f'Frame {frame_number}: Knees are not properly aligned over feet',
+                'severity': 'medium',
+                'correction': 'Align your knees directly over your feet for better stability',
+                'frame': frame_number,
+                'measurement': f'Knee-foot alignment offset: {knee_alignment:.3f}'
             })
             
         # Check body alignment
@@ -121,13 +175,35 @@ class ArcheryAnalyzer:
         alignment_offset = abs(shoulder_center[0] - foot_center[0])
         metrics['body_alignment'] = alignment_offset
         
-        if alignment_offset > 0.05:  # 5% of frame width threshold
+        if alignment_offset > 0.08:
             errors.append({
                 'type': 'posture',
-                'issue': 'poor_alignment',
-                'description': 'Body is not aligned vertically. Center your shoulders over your feet.',
+                'issue': 'severe_misalignment',
+                'description': f'Frame {frame_number}: Severe body misalignment - shoulders far from center',
                 'severity': 'high',
-                'correction': 'Adjust your posture to align shoulders directly over your feet'
+                'correction': 'Major posture adjustment needed - center your shoulders directly over your feet',
+                'frame': frame_number,
+                'measurement': f'Alignment offset: {alignment_offset:.3f} (critical threshold: 0.05)'
+            })
+        elif alignment_offset > 0.05:
+            errors.append({
+                'type': 'posture',
+                'issue': 'moderate_misalignment',
+                'description': f'Frame {frame_number}: Moderate body misalignment detected',
+                'severity': 'medium',
+                'correction': 'Adjust your posture to align shoulders more directly over your feet',
+                'frame': frame_number,
+                'measurement': f'Alignment offset: {alignment_offset:.3f} (target: <0.03)'
+            })
+        elif alignment_offset > 0.03:
+            errors.append({
+                'type': 'posture',
+                'issue': 'minor_misalignment',
+                'description': f'Frame {frame_number}: Minor body alignment issue',
+                'severity': 'low',
+                'correction': 'Fine-tune your posture for optimal vertical alignment',
+                'frame': frame_number,
+                'measurement': f'Alignment offset: {alignment_offset:.3f}'
             })
             
         return errors, metrics
