@@ -214,6 +214,8 @@ function App() {
   const analyzeVideo = async (isUpload = false) => {
     setLoading(true);
     setAnalysis(null);
+    setShowAllErrors({});
+    setShowAllRecommendations(false);
 
     try {
       let response;
