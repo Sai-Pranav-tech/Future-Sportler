@@ -612,28 +612,77 @@ function App() {
                       <TabsContent value="pose" className="mt-6">
                         {analysis.pose_data && analysis.pose_data.length > 0 ? (
                           <div className="space-y-6">
-                            <div className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg p-6">
-                              <h4 className="font-semibold mb-4 flex items-center space-x-2">
+                            <div className="bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 rounded-xl p-6 border border-blue-100 shadow-lg">
+                              <h4 className="font-semibold mb-4 flex items-center space-x-2 text-gray-800">
                                 <Activity className="w-5 h-5 text-blue-500" />
-                                <span>3D Pose Visualization</span>
+                                <span>Interactive 3D Pose Analysis</span>
+                                <Badge className="bg-green-100 text-green-800 text-xs">Real-time</Badge>
                               </h4>
                               
-                              <div className="h-96 bg-white rounded-lg border overflow-hidden">
-                                <Canvas camera={{ position: [3, 3, 5], fov: 60 }}>
+                              <div className="h-96 bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl border border-gray-700 overflow-hidden shadow-2xl">
+                                <Canvas camera={{ position: [4, 4, 6], fov: 50 }}>
                                   <Suspense fallback={null}>
-                                    <ambientLight intensity={0.6} />
-                                    <pointLight position={[10, 10, 10]} />
+                                    {/* Enhanced lighting for better visualization */}
+                                    <ambientLight intensity={0.4} />
+                                    <pointLight position={[10, 10, 10]} intensity={0.6} color="#ffffff" />
+                                    <pointLight position={[-10, -10, 5]} intensity={0.3} color="#4fc3f7" />
+                                    <spotLight 
+                                      position={[0, 10, 0]} 
+                                      angle={0.3} 
+                                      penumbra={0.1} 
+                                      intensity={0.5}
+                                      color="#81c784"
+                                    />
+                                    
                                     <PoseVisualization poseData={analysis.pose_data} />
-                                    <OrbitControls />
-                                    <gridHelper args={[8, 8]} />
+                                    <OrbitControls 
+                                      enablePan={true}
+                                      enableZoom={true}
+                                      enableRotate={true}
+                                      autoRotate={false}
+                                      maxDistance={15}
+                                      minDistance={2}
+                                    />
+                                    
+                                    {/* Enhanced grid */}
+                                    <gridHelper args={[8, 16, '#333333', '#555555']} />
                                   </Suspense>
                                 </Canvas>
                               </div>
                               
-                              <div className="mt-4 text-sm text-gray-600 space-y-1">
-                                <p><strong>🔴 Red:</strong> Shoulders | <strong>🟢 Teal:</strong> Elbows | <strong>🔵 Blue:</strong> Wrists</p>
-                                <p><strong>🟢 Green:</strong> Hips | <strong>🟡 Yellow:</strong> Other key points</p>
-                                <p className="text-xs mt-2 opacity-75">Use mouse to rotate, zoom, and pan the 3D view</p>
+                              <div className="mt-4 space-y-3">
+                                <div className="flex flex-wrap gap-4 text-sm font-medium">
+                                  <div className="flex items-center space-x-2">
+                                    <div className="w-3 h-3 bg-red-500 rounded-full shadow-sm"></div>
+                                    <span>Shoulders</span>
+                                  </div>
+                                  <div className="flex items-center space-x-2">
+                                    <div className="w-3 h-3 bg-teal-500 rounded-full shadow-sm"></div>
+                                    <span>Elbows</span>
+                                  </div>
+                                  <div className="flex items-center space-x-2">
+                                    <div className="w-3 h-3 bg-blue-500 rounded-full shadow-sm"></div>
+                                    <span>Wrists</span>
+                                  </div>
+                                  <div className="flex items-center space-x-2">
+                                    <div className="w-3 h-3 bg-green-500 rounded-full shadow-sm"></div>
+                                    <span>Hips</span>
+                                  </div>
+                                  <div className="flex items-center space-x-2">
+                                    <div className="w-3 h-3 bg-yellow-500 rounded-full shadow-sm"></div>
+                                    <span>Knees</span>
+                                  </div>
+                                </div>
+                                
+                                <div className="bg-white/80 backdrop-blur-sm p-3 rounded-lg border text-sm space-y-1">
+                                  <div className="flex items-center space-x-2 text-blue-600">
+                                    <Eye className="w-4 h-4" />
+                                    <span className="font-medium">Interactive Controls:</span>
+                                  </div>
+                                  <div className="text-gray-600 text-xs leading-relaxed">
+                                    <strong>Mouse:</strong> Rotate view • <strong>Scroll:</strong> Zoom • <strong>Right-click + drag:</strong> Pan
+                                  </div>
+                                </div>
                               </div>
                             </div>
                             
